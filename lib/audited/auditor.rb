@@ -79,7 +79,7 @@ module Audited
         set_audited_options(options)
 
         if audited_options[:comment_required]
-          validate :presence_of_audit_comment
+          validates_presence_of :audit_comment, if: :eligible_for_comment_validation?
           before_destroy :require_comment if audited_options[:on].include?(:destroy)
         end
 
@@ -386,17 +386,12 @@ module Audited
         end
       end
 
-      def presence_of_audit_comment
-        if comment_required_state?
-          errors.add(:audit_comment, :blank) unless audit_comment.present?
-        end
-      end
-
-      def comment_required_state?
+      def eligible_for_comment_validation?
         auditing_enabled &&
           audited_changes.present? &&
-          ((audited_options[:on].include?(:create) && new_record?) ||
-          (audited_options[:on].include?(:update) && persisted? && changed?))
+          ((audited_options[:on].include?(:create) && self.new_record?) ||
+          (audited_options[:on].include?(:update) && self.persisted?)) &&
+          !(audited_changes.empty? && self.persisted?)
       end
 
       def combine_audits_if_needed

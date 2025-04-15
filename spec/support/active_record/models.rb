@@ -96,6 +96,11 @@ module Models
       audited update_with_comment_only: false
     end
 
+    class OnUpdateCommentRequiredExceptNameUser < ::ActiveRecord::Base
+      self.table_name = :users
+      audited comment_required: true, except: :name, on: :update
+    end
+
     class AccessibleAfterDeclarationUser < ::ActiveRecord::Base
       self.table_name = :users
       audited
